@@ -107,6 +107,11 @@ LINE_COLORS = [
 ]
 
 
+def to_num(series):
+    s = series.astype(str).str.replace(",", "", regex=False).str.strip()
+    return pd.to_numeric(s, errors="coerce")
+
+
 def fmt(val):
     try:
         f = float(val)
@@ -186,9 +191,6 @@ with st.sidebar:
 
     df.columns = [c.strip() for c in df.columns]
 
-    for col in df.select_dtypes(include="object").columns:
-        df[col] = df[col].astype(str).str.strip()
-
     cam_col = "cam" if "cam" in df.columns else df.columns[0]
 
     st.markdown("---")
@@ -200,19 +202,11 @@ sel_df = df[df[cam_col] == selected].copy()
 camp_row = sel_df.iloc[0]
 
 if "dt" in sel_df.columns:
-    raw = sel_df["dt"].astype(str).str.strip()
-    parsed = pd.to_datetime(raw, format="%m/%d/%Y", errors="coerce")
-    # Fallback: Excel serial date numbers (e.g. 46022.9999 → Apr 22 2026)
-    still_nat = parsed.isna()
-    if still_nat.any():
-        numeric = pd.to_numeric(sel_df.loc[still_nat, "dt"], errors="coerce")
-        excel = pd.to_datetime("1899-12-30") + pd.to_timedelta(numeric.fillna(0), unit="D")
-        parsed[still_nat] = excel
-    sel_df["_dt"] = parsed.dt.normalize()
-    sel_df = sel_df[sel_df["_dt"].notna()].sort_values("_dt")
+    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], dayfirst=False, errors="coerce").dt.normalize()
+    sel_df = sel_df.sort_values("_dt")
     dates = sel_df["_dt"]
 else:
-    dates = pd.Series(range(len(sel_df)), index=sel_df.index)
+    dates = pd.Series(range(len(sel_df)))
 
 # ── Header ────────────────────────────────────────────────────────────────────
 city = camp_row.get("city", "")
@@ -281,11 +275,11 @@ if present_lines:
         ):
             fig = go.Figure()
             fig.add_trace(go.Scatter(
-                x=dates, y=sel_df[camp_col], mode="lines+markers",
+                x=dates, y=to_num(sel_df[camp_col]), mode="lines+markers",
                 line=dict(color=c_camp, width=2), marker=dict(size=5), name="Campaign Week",
             ))
             fig.add_trace(go.Scatter(
-                x=dates, y=sel_df[base_col], mode="lines+markers",
+                x=dates, y=to_num(sel_df[base_col]), mode="lines+markers",
                 line=dict(color=c_base, width=2, dash="dot"), marker=dict(size=5), name="Base Week",
             ))
             fig.update_layout(
@@ -296,7 +290,9 @@ if present_lines:
                     font=dict(size=11, color="#cdd6f4"),
                     bgcolor="rgba(0,0,0,0)",
                 ),
-                **{k: v for k, v in CHART_BASE.items() if k != "legend"},
+                xaxis=dict(gridcolor="#313244", showgrid=True, tickformat="%b %d", tickangle=-30),
+                yaxis=dict(gridcolor="#313244", showgrid=True, rangemode="tozero"),
+                **{k: v for k, v in CHART_BASE.items() if k not in ("legend", "xaxis", "yaxis")},
             )
             col_ui.plotly_chart(fig, use_container_width=True)
 
@@ -307,12 +303,15 @@ if u2t_col_name:
     left, _ = st.columns([1, 2])
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=dates, y=sel_df[u2t_col_name], mode="lines+markers",
+        x=dates, y=to_num(sel_df[u2t_col_name]), mode="lines+markers",
         line=dict(color="#f9e2af", width=2), marker=dict(size=5), name="U2T",
     ))
     fig.update_layout(
         title=dict(text="U2T", font=dict(size=13, color="#cdd6f4")),
-        showlegend=False, **CHART_BASE,
+        showlegend=False,
+        xaxis=dict(gridcolor="#313244", showgrid=True, tickformat="%b %d", tickangle=-30),
+        yaxis=dict(gridcolor="#313244", showgrid=True, rangemode="tozero"),
+        **{k: v for k, v in CHART_BASE.items() if k not in ("xaxis", "yaxis")},
     )
     left.plotly_chart(fig, use_container_width=True)
 
