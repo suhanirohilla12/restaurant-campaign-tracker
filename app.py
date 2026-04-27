@@ -275,7 +275,7 @@ def line_layout(title, y_min, y_max):
             range=[y_min - padding, y_max + padding],
             tickformat=",",
         ),
-        **{k: v for k, v in CHART_BASE.items() if k != "yaxis"},
+        **{k: v for k, v in CHART_BASE.items() if k not in ("yaxis", "legend", "height")},
         height=340,
     )
 
