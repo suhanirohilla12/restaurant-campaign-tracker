@@ -202,11 +202,16 @@ sel_df = df[df[cam_col] == selected].copy()
 camp_row = sel_df.iloc[0]
 
 if "dt" in sel_df.columns:
-    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], dayfirst=False, errors="coerce").dt.normalize()
+    parsed = pd.to_datetime(sel_df["dt"].astype(str).str.strip(), dayfirst=True, errors="coerce")
+    if parsed.isna().all():
+        parsed = pd.to_datetime(sel_df["dt"].astype(str).str.strip(), dayfirst=False, errors="coerce")
+    sel_df["_dt"] = parsed.dt.normalize()
     sel_df = sel_df.sort_values("_dt")
     dates = sel_df["_dt"]
+    if dates.isna().all():
+        dates = pd.Series(range(len(sel_df)), index=sel_df.index)
 else:
-    dates = pd.Series(range(len(sel_df)))
+    dates = pd.Series(range(len(sel_df)), index=sel_df.index)
 
 # ── Header ────────────────────────────────────────────────────────────────────
 city = camp_row.get("city", "")
