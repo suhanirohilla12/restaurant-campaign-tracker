@@ -258,8 +258,7 @@ if present_bars:
         col_ui.plotly_chart(fig, use_container_width=True)
 
 # ── 4. TREND LINES (Campaign Week vs Base Week) ───────────────────────────────
-def line_layout(title, y_min, y_max):
-    padding = (y_max - y_min) * 0.15 if y_max != y_min else 1
+def line_layout(title):
     return dict(
         title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
         showlegend=True,
@@ -270,11 +269,7 @@ def line_layout(title, y_min, y_max):
             yanchor="bottom", y=1.02,
             xanchor="left", x=0,
         ),
-        yaxis=dict(
-            gridcolor="#313244", showgrid=True,
-            range=[y_min - padding, y_max + padding],
-            tickformat=",",
-        ),
+        yaxis=dict(gridcolor="#313244", showgrid=True, autorange=True),
         **{k: v for k, v in CHART_BASE.items() if k not in ("yaxis", "legend", "height")},
         height=340,
     )
@@ -292,9 +287,6 @@ if present_lines:
         ):
             c_vals = pd.to_numeric(sel_df[camp_col], errors="coerce")
             b_vals = pd.to_numeric(sel_df[base_col], errors="coerce")
-            combined = pd.concat([c_vals, b_vals]).dropna()
-            y_min = combined.min() if not combined.empty else 0
-            y_max = combined.max() if not combined.empty else 1
 
             fig = go.Figure()
             fig.add_trace(go.Scatter(
@@ -311,7 +303,7 @@ if present_lines:
                 name="Base Week",
                 hovertemplate="<b>Base Week</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
             ))
-            fig.update_layout(**line_layout(title, y_min, y_max))
+            fig.update_layout(**line_layout(title))
             col_ui.plotly_chart(fig, use_container_width=True)
 
 # ── 5. U2T TREND ──────────────────────────────────────────────────────────────
@@ -320,7 +312,6 @@ if u2t_col_name:
     st.markdown('<div class="section-title">U2T Trend</div>', unsafe_allow_html=True)
     left, _ = st.columns([1, 2])
     u2t_vals = pd.to_numeric(sel_df[u2t_col_name], errors="coerce")
-    y_min, y_max = u2t_vals.min(), u2t_vals.max()
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=dates, y=u2t_vals, mode="lines+markers",
@@ -329,7 +320,7 @@ if u2t_col_name:
         name="U2T",
         hovertemplate="<b>U2T</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
     ))
-    fig.update_layout(**line_layout("U2T", y_min, y_max))
+    fig.update_layout(**line_layout("U2T"))
     left.plotly_chart(fig, use_container_width=True)
 
 # ── 6. DATA TABLE ─────────────────────────────────────────────────────────────
