@@ -200,7 +200,15 @@ sel_df = df[df[cam_col] == selected].copy()
 camp_row = sel_df.iloc[0]
 
 if "dt" in sel_df.columns:
-    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], format="%m/%d/%Y", errors="coerce")
+    raw = sel_df["dt"].astype(str).str.strip()
+    parsed = pd.to_datetime(raw, format="%m/%d/%Y", errors="coerce")
+    # Fallback: Excel serial date numbers (e.g. 46022.9999 → Apr 22 2026)
+    still_nat = parsed.isna()
+    if still_nat.any():
+        numeric = pd.to_numeric(sel_df.loc[still_nat, "dt"], errors="coerce")
+        excel = pd.to_datetime("1899-12-30") + pd.to_timedelta(numeric.fillna(0), unit="D")
+        parsed[still_nat] = excel
+    sel_df["_dt"] = parsed.dt.normalize()
     sel_df = sel_df[sel_df["_dt"].notna()].sort_values("_dt")
     dates = sel_df["_dt"]
 else:
