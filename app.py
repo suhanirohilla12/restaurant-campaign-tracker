@@ -296,24 +296,6 @@ if present_lines:
             )
             col_ui.plotly_chart(fig, use_container_width=True)
 
-# ── 5. U2T TREND ──────────────────────────────────────────────────────────────
-u2t_col_name = next((c for c in df.columns if c.strip().lower() == "u2t"), None)
-if u2t_col_name:
-    st.markdown('<div class="section-title">U2T Trend</div>', unsafe_allow_html=True)
-    left, _ = st.columns([1, 2])
-    fig = go.Figure()
-    fig.add_trace(go.Scatter(
-        x=dates, y=to_num(sel_df[u2t_col_name]), mode="lines+markers",
-        line=dict(color="#f9e2af", width=2), marker=dict(size=5), name="U2T",
-    ))
-    fig.update_layout(
-        title=dict(text="U2T", font=dict(size=13, color="#cdd6f4")),
-        showlegend=False,
-        xaxis=dict(gridcolor="#313244", showgrid=True, tickformat="%b %d", tickangle=-30),
-        yaxis=dict(gridcolor="#313244", showgrid=True, rangemode="tozero"),
-        **{k: v for k, v in CHART_BASE.items() if k not in ("xaxis", "yaxis")},
-    )
-    left.plotly_chart(fig, use_container_width=True)
 
 # ── 6. DATA TABLE ─────────────────────────────────────────────────────────────
 st.markdown('<div class="section-title">All Data</div>', unsafe_allow_html=True)
