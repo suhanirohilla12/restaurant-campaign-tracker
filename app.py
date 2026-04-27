@@ -191,6 +191,10 @@ with st.sidebar:
 
     df.columns = [c.strip() for c in df.columns]
 
+    # Strip whitespace from all string columns so filtering works correctly
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].astype(str).str.strip()
+
     cam_col = "cam" if "cam" in df.columns else df.columns[0]
 
     st.markdown("---")
