@@ -285,7 +285,8 @@ if present_lines:
                     font=dict(size=11, color="#cdd6f4"),
                     bgcolor="rgba(0,0,0,0)",
                 ),
-                **{k: v for k, v in CHART_BASE.items() if k != "legend"},
+                yaxis=dict(gridcolor="#313244", showgrid=True, rangemode="tozero"),
+                **{k: v for k, v in CHART_BASE.items() if k not in ("legend", "yaxis")},
             )
             col_ui.plotly_chart(fig, use_container_width=True)
 
@@ -301,7 +302,9 @@ if u2t_col_name:
     ))
     fig.update_layout(
         title=dict(text="U2T", font=dict(size=13, color="#cdd6f4")),
-        showlegend=False, **CHART_BASE,
+        showlegend=False,
+        yaxis=dict(gridcolor="#313244", showgrid=True, rangemode="tozero"),
+        **{k: v for k, v in CHART_BASE.items() if k != "yaxis"},
     )
     left.plotly_chart(fig, use_container_width=True)
 
