@@ -268,13 +268,18 @@ if present_lines:
         for col_ui, (title, camp_col, base_col), (c_camp, c_base) in zip(
             cols, chunk, LINE_COLORS[row_start:]
         ):
+            first_date = dates.iloc[0] - pd.Timedelta(days=1) if len(dates) > 0 else 0
+            x_with_zero = [first_date] + list(dates)
+            c_with_zero = [0] + list(pd.to_numeric(sel_df[camp_col], errors="coerce"))
+            b_with_zero = [0] + list(pd.to_numeric(sel_df[base_col], errors="coerce"))
+
             fig = go.Figure()
             fig.add_trace(go.Scatter(
-                x=dates, y=sel_df[camp_col], mode="lines+markers",
+                x=x_with_zero, y=c_with_zero, mode="lines+markers",
                 line=dict(color=c_camp, width=2), marker=dict(size=5), name="Campaign Week",
             ))
             fig.add_trace(go.Scatter(
-                x=dates, y=sel_df[base_col], mode="lines+markers",
+                x=x_with_zero, y=b_with_zero, mode="lines+markers",
                 line=dict(color=c_base, width=2, dash="dot"), marker=dict(size=5), name="Base Week",
             ))
             fig.update_layout(
@@ -296,8 +301,10 @@ if u2t_col_name:
     st.markdown('<div class="section-title">U2T Trend</div>', unsafe_allow_html=True)
     left, _ = st.columns([1, 2])
     fig = go.Figure()
+    first_date = dates.iloc[0] - pd.Timedelta(days=1) if len(dates) > 0 else 0
+    u2t_with_zero = [0] + list(pd.to_numeric(sel_df[u2t_col_name], errors="coerce"))
     fig.add_trace(go.Scatter(
-        x=dates, y=sel_df[u2t_col_name], mode="lines+markers",
+        x=[first_date] + list(dates), y=u2t_with_zero, mode="lines+markers",
         line=dict(color="#f9e2af", width=2), marker=dict(size=5), name="U2T",
     ))
     fig.update_layout(
