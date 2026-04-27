@@ -258,29 +258,6 @@ if present_bars:
         col_ui.plotly_chart(fig, use_container_width=True)
 
 # ── 4. TREND LINES (Campaign Week vs Base Week) ───────────────────────────────
-def line_layout(title):
-    return dict(
-        title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
-        showlegend=True,
-        legend=dict(
-            bgcolor="#1e1e2e",
-            font=dict(size=11, color="#cdd6f4"),
-            orientation="h",
-            yanchor="bottom", y=1.02,
-            xanchor="left", x=0,
-        ),
-        yaxis=dict(gridcolor="#313244", showgrid=True, autorange=True),
-        **{k: v for k, v in CHART_BASE.items() if k not in ("yaxis", "legend", "height")},
-        height=340,
-    )
-
-
-with st.expander("Debug: raw line chart values for selected campaign"):
-    for _, camp_col, base_col in LINE_PAIRS:
-        if camp_col in sel_df.columns and base_col in sel_df.columns:
-            st.write(f"**{camp_col}**", sel_df[camp_col].tolist())
-            st.write(f"**{base_col}**", sel_df[base_col].tolist())
-
 present_lines = [(t, c, b) for t, c, b in LINE_PAIRS if c in df.columns and b in df.columns]
 if present_lines:
     st.markdown('<div class="section-title">Campaign Week vs Base Week</div>', unsafe_allow_html=True)
@@ -291,25 +268,19 @@ if present_lines:
         for col_ui, (title, camp_col, base_col), (c_camp, c_base) in zip(
             cols, chunk, LINE_COLORS[row_start:]
         ):
-            c_vals = pd.to_numeric(sel_df[camp_col], errors="coerce")
-            b_vals = pd.to_numeric(sel_df[base_col], errors="coerce")
-
             fig = go.Figure()
             fig.add_trace(go.Scatter(
-                x=dates, y=c_vals, mode="lines+markers",
-                line=dict(color=c_camp, width=3),
-                marker=dict(size=7, symbol="circle"),
-                name="Campaign Week",
-                hovertemplate="<b>Campaign Week</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
+                x=dates, y=sel_df[camp_col], mode="lines+markers",
+                line=dict(color=c_camp, width=2), marker=dict(size=5), name="Campaign Week",
             ))
             fig.add_trace(go.Scatter(
-                x=dates, y=b_vals, mode="lines+markers",
-                line=dict(color="#6c7086", width=2, dash="dot"),
-                marker=dict(size=6, symbol="diamond", color="#6c7086"),
-                name="Base Week",
-                hovertemplate="<b>Base Week</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
+                x=dates, y=sel_df[base_col], mode="lines+markers",
+                line=dict(color=c_base, width=2, dash="dot"), marker=dict(size=5), name="Base Week",
             ))
-            fig.update_layout(**line_layout(title))
+            fig.update_layout(
+                title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
+                showlegend=True, **CHART_BASE,
+            )
             col_ui.plotly_chart(fig, use_container_width=True)
 
 # ── 5. U2T TREND ──────────────────────────────────────────────────────────────
@@ -317,16 +288,15 @@ u2t_col_name = next((c for c in df.columns if c.strip().lower() == "u2t"), None)
 if u2t_col_name:
     st.markdown('<div class="section-title">U2T Trend</div>', unsafe_allow_html=True)
     left, _ = st.columns([1, 2])
-    u2t_vals = pd.to_numeric(sel_df[u2t_col_name], errors="coerce")
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=dates, y=u2t_vals, mode="lines+markers",
-        line=dict(color="#f9e2af", width=3),
-        marker=dict(size=7, symbol="circle"),
-        name="U2T",
-        hovertemplate="<b>U2T</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
+        x=dates, y=sel_df[u2t_col_name], mode="lines+markers",
+        line=dict(color="#f9e2af", width=2), marker=dict(size=5), name="U2T",
     ))
-    fig.update_layout(**line_layout("U2T"))
+    fig.update_layout(
+        title=dict(text="U2T", font=dict(size=13, color="#cdd6f4")),
+        showlegend=False, **CHART_BASE,
+    )
     left.plotly_chart(fig, use_container_width=True)
 
 # ── 6. DATA TABLE ─────────────────────────────────────────────────────────────
