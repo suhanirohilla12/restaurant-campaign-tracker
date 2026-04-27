@@ -70,11 +70,11 @@ BAR_PAIRS = [
 
 # N–W: 5 paired line charts (campaign week vs base week)
 LINE_PAIRS = [
-    ("GMV",      "gmv",          "base week gmv"),
-    ("ULV",      "ulv_",         "base week ulv"),
-    ("Txns",     "txns",         "base week txns"),
-    ("N Txns",   "n_txns",       "base week n txns"),
-    ("Bookings", "bookings_made","base week bookings"),
+    ("GMV",      "Campaign GMV",      "base week gmv"),
+    ("ULV",      "ulv_",              "base week ulv"),
+    ("Txns",     "txns",              "base week txns"),
+    ("N Txns",   "n_txns",            "base week n txns"),
+    ("Bookings", "bookings_made",     "base week bookings"),
 ]
 
 U2T_COL = "u2t"
