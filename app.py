@@ -39,37 +39,45 @@ st.markdown("""
 
 # ── Column definitions ────────────────────────────────────────────────────────
 
+# D/F/H/J/L: top-level campaign KPI cards
+TOP_KPI_COLS = [
+    ("GMV",      "Campaign GMV"),
+    ("Txns",     "Txns Campaigns"),
+    ("ULV",      "ULV campaign"),
+    ("N Txns",   "N txns camp"),
+    ("Bookings", "Bookings campaign"),
+]
+
+# Y–AE: secondary KPI cards
+SEC_KPI_COLS = [
+    ("Inc Burn",           "Inc burn (Campaign)"),
+    ("CPIT",               "CPIT (campaign)"),
+    ("Txns Growth",        "TXNS growth"),
+    ("ULV Growth",         "ULV Growth"),
+    ("Banner Impressions", "Banner impressions"),
+    ("Banner Clicks",      "Banner clicks"),
+    ("Banner CTR",         "banner ctr"),
+]
+
 # D–M: 5 paired bar charts (campaign vs incremental)
 BAR_PAIRS = [
-    ("GMV",      "gmv(camp)",       "inc_gmv(camp)"),
-    ("Txns",     "txns(campaign)",  "inc_txns (campaign)"),
-    ("ULV",      "ulv (camp)",      "inc_ulv(camp)"),
-    ("N Txns",   "n_txns (camp)",   "inc_n_txns(sum)"),
-    ("Bookings", "bookings (camp)", "inc_bookings (camp)"),
+    ("GMV",      "Campaign GMV",      "Inc GMV Campaign"),
+    ("Txns",     "Txns Campaigns",    "Inc txns camp"),
+    ("ULV",      "ULV campaign",      "Inc ulv campaign"),
+    ("N Txns",   "N txns camp",       "Inc N txns camp"),
+    ("Bookings", "Bookings campaign", "Inc Bookings camp"),
 ]
 
 # N–W: 5 paired line charts (campaign week vs base week)
 LINE_PAIRS = [
-    ("GMV",      "gmv(camp)",       "gmv"),
-    ("ULV",      "ulv (camp)",      "ulv"),
-    ("Txns",     "txns(campaign)",  "txns"),
-    ("N Txns",   "n_txns (camp)",   "n_txns"),
-    ("Bookings", "bookings (camp)", "bookings_made"),
+    ("GMV",      "gmv",          "base week gmv"),
+    ("ULV",      "ulv_",         "base week ulv"),
+    ("Txns",     "txns",         "base week txns"),
+    ("N Txns",   "n_txns",       "base week n txns"),
+    ("Bookings", "bookings_made","base week bookings"),
 ]
 
-# X: single line chart
 U2T_COL = "u2t"
-
-# Y–AE: KPI cards
-KPI_COLS = [
-    "inc_burn (campaign)",
-    "inc_cpit(campaign)",
-    "txns growth (campaign)",
-    "ulv growth (Campaign growth)",
-    "Banner impressions",
-    "Banner clicks",
-    "banner ctr",
-]
 
 CHART_BASE = dict(
     plot_bgcolor="#1e1e2e",
@@ -92,7 +100,7 @@ BAR_COLORS = [
 
 LINE_COLORS = [
     ("#89b4fa", "#585b70"),
-    ("#a6e3a1", "#40a02b"),
+    ("#a6e3a1", "#2d6a2d"),
     ("#f38ba8", "#7d3354"),
     ("#fab387", "#7d5437"),
     ("#cba6f7", "#6c4fa0"),
@@ -102,13 +110,15 @@ LINE_COLORS = [
 def fmt(val):
     try:
         f = float(val)
+        if np.isnan(f):
+            return "—"
         if abs(f) >= 1_000_000:
             return f"{f/1_000_000:.2f}M"
         if abs(f) >= 1_000:
             return f"{f:,.1f}"
         return f"{f:,.2f}"
     except Exception:
-        return str(val)
+        return str(val) if pd.notna(val) else "—"
 
 
 def generate_sample_data():
@@ -118,38 +128,40 @@ def generate_sample_data():
     for cam in cams:
         for day_offset in range(7):
             dt = pd.Timestamp("2026-04-13") + pd.Timedelta(days=day_offset)
-            base_gmv   = rng.uniform(100_000, 500_000)
-            base_txns  = rng.uniform(50, 200)
-            base_ulv   = rng.uniform(300, 1500)
-            base_ntxns = rng.uniform(10, 60)
-            base_book  = rng.uniform(20, 100)
+            bg, bt, bu, bn, bb = (rng.uniform(100_000, 500_000), rng.uniform(50, 200),
+                                   rng.uniform(300, 1500), rng.uniform(10, 60), rng.uniform(20, 100))
             rows.append({
-                "dt":                           dt.strftime("%m/%d/%Y"),
-                "city":                         rng.choice(["Delhi", "Mumbai", "Bangalore"]),
-                "cam":                          cam,
-                "gmv(camp)":                    round(base_gmv, 2),
-                "inc_gmv(camp)":                round(base_gmv * rng.uniform(0.4, 0.7), 2),
-                "txns(campaign)":               round(base_txns, 2),
-                "inc_txns (campaign)":          round(base_txns * rng.uniform(0.3, 0.6), 2),
-                "ulv (camp)":                   round(base_ulv, 2),
-                "inc_ulv(camp)":                round(base_ulv * rng.uniform(0.2, 0.5), 2),
-                "n_txns (camp)":                round(base_ntxns, 2),
-                "inc_n_txns(sum)":              round(base_ntxns * rng.uniform(0.3, 0.7), 2),
-                "bookings (camp)":              round(base_book, 2),
-                "inc_bookings (camp)":          round(base_book * rng.uniform(0.4, 0.8), 2),
-                "gmv":                          round(base_gmv * rng.uniform(0.6, 0.9), 2),
-                "ulv":                          round(base_ulv * rng.uniform(0.7, 0.95), 2),
-                "txns":                         round(base_txns * rng.uniform(0.6, 0.9), 2),
-                "n_txns":                       round(base_ntxns * rng.uniform(0.6, 0.9), 2),
-                "bookings_made":                round(base_book * rng.uniform(0.6, 0.9), 2),
-                "u2t":                          round(rng.uniform(5, 25), 2),
-                "inc_burn (campaign)":          round(rng.uniform(-20000, 50000), 2),
-                "inc_cpit(campaign)":           round(rng.uniform(-500, 1000), 2),
-                "txns growth (campaign)":       round(rng.uniform(1.0, 3.5), 4),
-                "ulv growth (Campaign growth)": round(rng.uniform(1.0, 3.5), 4),
-                "Banner impressions":           round(rng.uniform(10000, 200000)),
-                "Banner clicks":               round(rng.uniform(100, 5000)),
-                "banner ctr":                   round(rng.uniform(0.005, 0.05), 4),
+                "dt": dt.strftime("%m/%d/%Y"),
+                "city": rng.choice(["Delhi", "Mumbai", "Bangalore"]),
+                "cam": cam,
+                "Campaign GMV":       round(bg, 2),
+                "Inc GMV Campaign":   round(bg * rng.uniform(0.4, 0.7), 2),
+                "Txns Campaigns":     round(bt, 2),
+                "Inc txns camp":      round(bt * rng.uniform(0.3, 0.6), 2),
+                "ULV campaign":       round(bu, 2),
+                "Inc ulv campaign":   round(bu * rng.uniform(0.2, 0.5), 2),
+                "N txns camp":        round(bn, 2),
+                "Inc N txns camp":    round(bn * rng.uniform(0.3, 0.7), 2),
+                "Bookings campaign":  round(bb, 2),
+                "Inc Bookings camp":  round(bb * rng.uniform(0.4, 0.8), 2),
+                "gmv":                round(bg * rng.uniform(0.8, 1.1), 2),
+                "base week gmv":      round(bg * rng.uniform(0.6, 0.85), 2),
+                "ulv_":               round(bu * rng.uniform(0.9, 1.05), 2),
+                "base week ulv":      round(bu * rng.uniform(0.7, 0.9), 2),
+                "txns":               round(bt * rng.uniform(0.9, 1.1), 2),
+                "base week txns":     round(bt * rng.uniform(0.6, 0.85), 2),
+                "n_txns":             round(bn * rng.uniform(0.85, 1.1), 2),
+                "base week n txns":   round(bn * rng.uniform(0.6, 0.85), 2),
+                "bookings_made":      round(bb * rng.uniform(0.85, 1.1), 2),
+                "base week bookings": round(bb * rng.uniform(0.6, 0.85), 2),
+                "u2t":                round(rng.uniform(5, 25), 2),
+                "Inc burn (Campaign)":round(rng.uniform(-20000, 50000), 2),
+                "CPIT (campaign)":    round(rng.uniform(-500, 1000), 2),
+                "TXNS growth":        round(rng.uniform(1.0, 3.5), 4),
+                "ULV Growth":         round(rng.uniform(1.0, 3.5), 4),
+                "Banner impressions": round(rng.uniform(10000, 200000)),
+                "Banner clicks":      round(rng.uniform(100, 5000)),
+                "banner ctr":         round(rng.uniform(0.005, 0.05), 4),
             })
     return pd.DataFrame(rows)
 
@@ -180,7 +192,7 @@ with st.sidebar:
     campaigns = sorted(df[cam_col].dropna().unique().tolist())
     selected = st.selectbox("Select Restaurant / Campaign", campaigns)
 
-# ── Filter rows for selected campaign ────────────────────────────────────────
+# ── Filter ────────────────────────────────────────────────────────────────────
 sel_df = df[df[cam_col] == selected].copy()
 camp_row = sel_df.iloc[0]
 
@@ -196,112 +208,98 @@ city = camp_row.get("city", "")
 st.markdown(f"## {selected}" + (f"  —  {city}" if city else ""))
 st.markdown("---")
 
-# ── D–M: Bar Charts (Campaign vs Incremental) ─────────────────────────────────
-present_pairs = [(t, b, i) for t, b, i in BAR_PAIRS if b in df.columns and i in df.columns]
+# ── 1. TOP KPI CARDS (D/F/H/J/L: campaign values) ────────────────────────────
+present_top = [(label, col) for label, col in TOP_KPI_COLS if col in df.columns]
+if present_top:
+    st.markdown('<div class="section-title">Campaign Performance</div>', unsafe_allow_html=True)
+    cols = st.columns(len(present_top))
+    for col_ui, (label, col) in zip(cols, present_top):
+        col_ui.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">{label}</div>
+            <div class="kpi-value">{fmt(camp_row.get(col, "—"))}</div>
+        </div>
+        """, unsafe_allow_html=True)
 
-if present_pairs:
+# ── 2. SECONDARY KPI CARDS (Y–AE) ────────────────────────────────────────────
+present_sec = [(label, col) for label, col in SEC_KPI_COLS if col in df.columns]
+if present_sec:
+    st.markdown('<div class="section-title">Campaign KPIs</div>', unsafe_allow_html=True)
+    cols = st.columns(len(present_sec))
+    for col_ui, (label, col) in zip(cols, present_sec):
+        col_ui.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">{label}</div>
+            <div class="kpi-value">{fmt(camp_row.get(col, "—"))}</div>
+        </div>
+        """, unsafe_allow_html=True)
+
+# ── 3. BAR CHARTS (Campaign vs Incremental) ───────────────────────────────────
+present_bars = [(t, b, i) for t, b, i in BAR_PAIRS if b in df.columns and i in df.columns]
+if present_bars:
     st.markdown('<div class="section-title">Campaign vs Incremental</div>', unsafe_allow_html=True)
-    bar_cols = st.columns(len(present_pairs))
-    for col_ui, (title, base_col, incr_col), (c1, c2) in zip(bar_cols, present_pairs, BAR_COLORS):
+    cols = st.columns(len(present_bars))
+    for col_ui, (title, base_col, incr_col), (c1, c2) in zip(cols, present_bars, BAR_COLORS):
         base_val = camp_row.get(base_col, 0)
         incr_val = camp_row.get(incr_col, 0)
         fig = go.Figure()
         fig.add_trace(go.Bar(
-            name="Campaign",
-            x=["Campaign"],
-            y=[base_val],
-            marker_color=c1,
-            text=[fmt(base_val)],
-            textposition="outside",
+            name="Campaign", x=["Campaign"], y=[base_val],
+            marker_color=c1, text=[fmt(base_val)], textposition="outside",
         ))
         fig.add_trace(go.Bar(
-            name="Incremental",
-            x=["Incremental"],
-            y=[incr_val],
-            marker_color=c2,
-            text=[fmt(incr_val)],
-            textposition="outside",
+            name="Incremental", x=["Incremental"], y=[incr_val],
+            marker_color=c2, text=[fmt(incr_val)], textposition="outside",
         ))
         fig.update_layout(
             title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
-            barmode="group",
-            showlegend=False,
-            **CHART_BASE,
+            barmode="group", showlegend=False, **CHART_BASE,
         )
         col_ui.plotly_chart(fig, use_container_width=True)
 
-# ── N–W: Paired Line Charts (Campaign Week vs Base Week) ──────────────────────
-present_line_pairs = [(t, c, b) for t, c, b in LINE_PAIRS if c in df.columns and b in df.columns]
-
-if present_line_pairs:
+# ── 4. TREND LINES (Campaign Week vs Base Week) ───────────────────────────────
+present_lines = [(t, c, b) for t, c, b in LINE_PAIRS if c in df.columns and b in df.columns]
+if present_lines:
     st.markdown('<div class="section-title">Campaign Week vs Base Week</div>', unsafe_allow_html=True)
     per_row = 3
-    for row_start in range(0, len(present_line_pairs), per_row):
-        chunk = present_line_pairs[row_start:row_start + per_row]
-        colors_chunk = LINE_COLORS[row_start:row_start + per_row]
-        line_cols = st.columns(per_row)
-        for col_ui, (title, camp_col, base_col), (c_camp, c_base) in zip(line_cols, chunk, colors_chunk):
+    for row_start in range(0, len(present_lines), per_row):
+        chunk = present_lines[row_start:row_start + per_row]
+        cols = st.columns(per_row)
+        for col_ui, (title, camp_col, base_col), (c_camp, c_base) in zip(
+            cols, chunk, LINE_COLORS[row_start:]
+        ):
             fig = go.Figure()
             fig.add_trace(go.Scatter(
-                x=dates, y=sel_df[camp_col],
-                mode="lines+markers",
-                line=dict(color=c_camp, width=2),
-                marker=dict(size=5),
-                name="Campaign Week",
+                x=dates, y=sel_df[camp_col], mode="lines+markers",
+                line=dict(color=c_camp, width=2), marker=dict(size=5), name="Campaign Week",
             ))
             fig.add_trace(go.Scatter(
-                x=dates, y=sel_df[base_col],
-                mode="lines+markers",
-                line=dict(color=c_base, width=2, dash="dot"),
-                marker=dict(size=5),
-                name="Base Week",
+                x=dates, y=sel_df[base_col], mode="lines+markers",
+                line=dict(color=c_base, width=2, dash="dot"), marker=dict(size=5), name="Base Week",
             ))
             fig.update_layout(
                 title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
-                showlegend=True,
-                **CHART_BASE,
+                showlegend=True, **CHART_BASE,
             )
             col_ui.plotly_chart(fig, use_container_width=True)
 
-# ── X: U2T Line Chart ─────────────────────────────────────────────────────────
-if U2T_COL in df.columns:
+# ── 5. U2T TREND ──────────────────────────────────────────────────────────────
+u2t_col_name = next((c for c in df.columns if c.strip().lower() == "u2t"), None)
+if u2t_col_name:
     st.markdown('<div class="section-title">U2T Trend</div>', unsafe_allow_html=True)
-    u2t_col, _ = st.columns([1, 2])
+    left, _ = st.columns([1, 2])
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=dates, y=sel_df[U2T_COL],
-        mode="lines+markers",
-        line=dict(color="#f9e2af", width=2),
-        marker=dict(size=5),
-        name="u2t",
+        x=dates, y=sel_df[u2t_col_name], mode="lines+markers",
+        line=dict(color="#f9e2af", width=2), marker=dict(size=5), name="U2T",
     ))
     fig.update_layout(
         title=dict(text="U2T", font=dict(size=13, color="#cdd6f4")),
-        showlegend=False,
-        **CHART_BASE,
+        showlegend=False, **CHART_BASE,
     )
-    u2t_col.plotly_chart(fig, use_container_width=True)
+    left.plotly_chart(fig, use_container_width=True)
 
-# ── Y–AE: KPI Cards ───────────────────────────────────────────────────────────
-present_kpi = [c for c in KPI_COLS if c in df.columns]
-if present_kpi:
-    st.markdown('<div class="section-title">Campaign KPIs</div>', unsafe_allow_html=True)
-    kpi_cols = st.columns(len(present_kpi))
-    for col_ui, metric in zip(kpi_cols, present_kpi):
-        val = camp_row.get(metric, "—")
-        label = (metric
-                 .replace("(campaign)", "")
-                 .replace("(Campaign growth)", "")
-                 .replace("(camp)", "")
-                 .strip())
-        col_ui.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">{label}</div>
-            <div class="kpi-value">{fmt(val)}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-# ── Data Table ────────────────────────────────────────────────────────────────
+# ── 6. DATA TABLE ─────────────────────────────────────────────────────────────
 st.markdown('<div class="section-title">All Data</div>', unsafe_allow_html=True)
 
 
