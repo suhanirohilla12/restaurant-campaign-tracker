@@ -70,11 +70,11 @@ BAR_PAIRS = [
 
 # N–W: 5 paired line charts (campaign week vs base week)
 LINE_PAIRS = [
-    ("GMV",      "Campaign GMV",      "base week gmv"),
-    ("ULV",      "ulv_",              "base week ulv"),
-    ("Txns",     "txns",              "base week txns"),
-    ("N Txns",   "n_txns",            "base week n txns"),
-    ("Bookings", "bookings_made",     "base week bookings"),
+    ("GMV",      "gmv",           "base week gmv"),
+    ("ULV",      "ulv_",          "base week ulv"),
+    ("Txns",     "txns",          "base week txns"),
+    ("N Txns",   "n_txns",        "base week n txns"),
+    ("Bookings", "bookings_made", "base week bookings"),
 ]
 
 U2T_COL = "u2t"
@@ -185,14 +185,6 @@ with st.sidebar:
         st.info("Showing sample data")
 
     df.columns = [c.strip() for c in df.columns]
-
-    # Strip Indian-format commas from numeric-looking string columns (e.g. "1,13,955.00")
-    for col in df.columns:
-        if df[col].dtype == object:
-            cleaned = df[col].astype(str).str.replace(",", "", regex=False).str.strip()
-            converted = pd.to_numeric(cleaned, errors="coerce")
-            if converted.notna().sum() > 0:
-                df[col] = converted
 
     cam_col = "cam" if "cam" in df.columns else df.columns[0]
 
