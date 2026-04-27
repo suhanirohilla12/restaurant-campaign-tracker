@@ -202,7 +202,7 @@ sel_df = df[df[cam_col] == selected].copy()
 camp_row = sel_df.iloc[0]
 
 if "dt" in sel_df.columns:
-    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], dayfirst=False, errors="coerce")
+    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], dayfirst=False, errors="coerce").dt.normalize()
     sel_df = sel_df.sort_values("_dt")
     dates = sel_df["_dt"]
 else:
@@ -290,8 +290,9 @@ if present_lines:
                     font=dict(size=11, color="#cdd6f4"),
                     bgcolor="rgba(0,0,0,0)",
                 ),
+                xaxis=dict(gridcolor="#313244", showgrid=True, tickformat="%b %d", tickangle=-30),
                 yaxis=dict(gridcolor="#313244", showgrid=True, rangemode="tozero"),
-                **{k: v for k, v in CHART_BASE.items() if k not in ("legend", "yaxis")},
+                **{k: v for k, v in CHART_BASE.items() if k not in ("legend", "xaxis", "yaxis")},
             )
             col_ui.plotly_chart(fig, use_container_width=True)
 
@@ -308,8 +309,9 @@ if u2t_col_name:
     fig.update_layout(
         title=dict(text="U2T", font=dict(size=13, color="#cdd6f4")),
         showlegend=False,
+        xaxis=dict(gridcolor="#313244", showgrid=True, tickformat="%b %d", tickangle=-30),
         yaxis=dict(gridcolor="#313244", showgrid=True, rangemode="tozero"),
-        **{k: v for k, v in CHART_BASE.items() if k != "yaxis"},
+        **{k: v for k, v in CHART_BASE.items() if k not in ("xaxis", "yaxis")},
     )
     left.plotly_chart(fig, use_container_width=True)
 
