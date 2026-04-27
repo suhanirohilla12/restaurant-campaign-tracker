@@ -275,6 +275,12 @@ def line_layout(title):
     )
 
 
+with st.expander("Debug: raw line chart values for selected campaign"):
+    for _, camp_col, base_col in LINE_PAIRS:
+        if camp_col in sel_df.columns and base_col in sel_df.columns:
+            st.write(f"**{camp_col}**", sel_df[camp_col].tolist())
+            st.write(f"**{base_col}**", sel_df[base_col].tolist())
+
 present_lines = [(t, c, b) for t, c, b in LINE_PAIRS if c in df.columns and b in df.columns]
 if present_lines:
     st.markdown('<div class="section-title">Campaign Week vs Base Week</div>', unsafe_allow_html=True)
