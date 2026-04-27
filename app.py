@@ -186,6 +186,9 @@ with st.sidebar:
 
     df.columns = [c.strip() for c in df.columns]
 
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].astype(str).str.strip()
+
     cam_col = "cam" if "cam" in df.columns else df.columns[0]
 
     st.markdown("---")
@@ -197,11 +200,11 @@ sel_df = df[df[cam_col] == selected].copy()
 camp_row = sel_df.iloc[0]
 
 if "dt" in sel_df.columns:
-    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], dayfirst=False, errors="coerce")
-    sel_df = sel_df.sort_values("_dt")
+    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], format="%m/%d/%Y", errors="coerce")
+    sel_df = sel_df[sel_df["_dt"].notna()].sort_values("_dt")
     dates = sel_df["_dt"]
 else:
-    dates = pd.Series(range(len(sel_df)))
+    dates = pd.Series(range(len(sel_df)), index=sel_df.index)
 
 # ── Header ────────────────────────────────────────────────────────────────────
 city = camp_row.get("city", "")
