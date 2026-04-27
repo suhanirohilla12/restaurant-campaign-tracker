@@ -279,7 +279,13 @@ if present_lines:
             ))
             fig.update_layout(
                 title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
-                showlegend=True, **CHART_BASE,
+                showlegend=True,
+                legend=dict(
+                    orientation="h", x=0, y=1.15,
+                    font=dict(size=11, color="#cdd6f4"),
+                    bgcolor="rgba(0,0,0,0)",
+                ),
+                **{k: v for k, v in CHART_BASE.items() if k != "legend"},
             )
             col_ui.plotly_chart(fig, use_container_width=True)
 
