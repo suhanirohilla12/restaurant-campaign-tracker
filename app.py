@@ -258,6 +258,28 @@ if present_bars:
         col_ui.plotly_chart(fig, use_container_width=True)
 
 # ── 4. TREND LINES (Campaign Week vs Base Week) ───────────────────────────────
+def line_layout(title, y_min, y_max):
+    padding = (y_max - y_min) * 0.15 if y_max != y_min else 1
+    return dict(
+        title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
+        showlegend=True,
+        legend=dict(
+            bgcolor="#1e1e2e",
+            font=dict(size=11, color="#cdd6f4"),
+            orientation="h",
+            yanchor="bottom", y=1.02,
+            xanchor="left", x=0,
+        ),
+        yaxis=dict(
+            gridcolor="#313244", showgrid=True,
+            range=[y_min - padding, y_max + padding],
+            tickformat=",",
+        ),
+        **{k: v for k, v in CHART_BASE.items() if k != "yaxis"},
+        height=340,
+    )
+
+
 present_lines = [(t, c, b) for t, c, b in LINE_PAIRS if c in df.columns and b in df.columns]
 if present_lines:
     st.markdown('<div class="section-title">Campaign Week vs Base Week</div>', unsafe_allow_html=True)
@@ -268,19 +290,40 @@ if present_lines:
         for col_ui, (title, camp_col, base_col), (c_camp, c_base) in zip(
             cols, chunk, LINE_COLORS[row_start:]
         ):
+            c_vals = pd.to_numeric(sel_df[camp_col], errors="coerce")
+            b_vals = pd.to_numeric(sel_df[base_col], errors="coerce")
+            combined = pd.concat([c_vals, b_vals]).dropna()
+            y_min = combined.min() if not combined.empty else 0
+            y_max = combined.max() if not combined.empty else 1
+
             fig = go.Figure()
+            # shaded fill between lines
             fig.add_trace(go.Scatter(
-                x=dates, y=sel_df[camp_col], mode="lines+markers",
-                line=dict(color=c_camp, width=2), marker=dict(size=5), name="Campaign Week",
+                x=dates, y=b_vals, mode="lines",
+                line=dict(width=0), showlegend=False,
+                hoverinfo="skip", fillcolor="rgba(137,180,250,0.08)",
             ))
             fig.add_trace(go.Scatter(
-                x=dates, y=sel_df[base_col], mode="lines+markers",
-                line=dict(color=c_base, width=2, dash="dot"), marker=dict(size=5), name="Base Week",
+                x=dates, y=c_vals, mode="lines",
+                line=dict(width=0), showlegend=False,
+                fill="tonexty", fillcolor="rgba(137,180,250,0.08)",
+                hoverinfo="skip",
             ))
-            fig.update_layout(
-                title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
-                showlegend=True, **CHART_BASE,
-            )
+            fig.add_trace(go.Scatter(
+                x=dates, y=c_vals, mode="lines+markers",
+                line=dict(color=c_camp, width=2.5),
+                marker=dict(size=6, symbol="circle"),
+                name="Campaign Week",
+                hovertemplate="<b>Campaign Week</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
+            ))
+            fig.add_trace(go.Scatter(
+                x=dates, y=b_vals, mode="lines+markers",
+                line=dict(color=c_base, width=2, dash="dot"),
+                marker=dict(size=6, symbol="diamond"),
+                name="Base Week",
+                hovertemplate="<b>Base Week</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
+            ))
+            fig.update_layout(**line_layout(title, y_min, y_max))
             col_ui.plotly_chart(fig, use_container_width=True)
 
 # ── 5. U2T TREND ──────────────────────────────────────────────────────────────
@@ -288,15 +331,17 @@ u2t_col_name = next((c for c in df.columns if c.strip().lower() == "u2t"), None)
 if u2t_col_name:
     st.markdown('<div class="section-title">U2T Trend</div>', unsafe_allow_html=True)
     left, _ = st.columns([1, 2])
+    u2t_vals = pd.to_numeric(sel_df[u2t_col_name], errors="coerce")
+    y_min, y_max = u2t_vals.min(), u2t_vals.max()
     fig = go.Figure()
     fig.add_trace(go.Scatter(
-        x=dates, y=sel_df[u2t_col_name], mode="lines+markers",
-        line=dict(color="#f9e2af", width=2), marker=dict(size=5), name="U2T",
+        x=dates, y=u2t_vals, mode="lines+markers",
+        line=dict(color="#f9e2af", width=2.5),
+        marker=dict(size=6, symbol="circle"),
+        name="U2T",
+        hovertemplate="<b>U2T</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
     ))
-    fig.update_layout(
-        title=dict(text="U2T", font=dict(size=13, color="#cdd6f4")),
-        showlegend=False, **CHART_BASE,
-    )
+    fig.update_layout(**line_layout("U2T", y_min, y_max))
     left.plotly_chart(fig, use_container_width=True)
 
 # ── 6. DATA TABLE ─────────────────────────────────────────────────────────────
