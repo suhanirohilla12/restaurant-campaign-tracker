@@ -297,29 +297,17 @@ if present_lines:
             y_max = combined.max() if not combined.empty else 1
 
             fig = go.Figure()
-            # shaded fill between lines
-            fig.add_trace(go.Scatter(
-                x=dates, y=b_vals, mode="lines",
-                line=dict(width=0), showlegend=False,
-                hoverinfo="skip", fillcolor="rgba(137,180,250,0.08)",
-            ))
-            fig.add_trace(go.Scatter(
-                x=dates, y=c_vals, mode="lines",
-                line=dict(width=0), showlegend=False,
-                fill="tonexty", fillcolor="rgba(137,180,250,0.08)",
-                hoverinfo="skip",
-            ))
             fig.add_trace(go.Scatter(
                 x=dates, y=c_vals, mode="lines+markers",
-                line=dict(color=c_camp, width=2.5),
-                marker=dict(size=6, symbol="circle"),
+                line=dict(color=c_camp, width=3),
+                marker=dict(size=7, symbol="circle"),
                 name="Campaign Week",
                 hovertemplate="<b>Campaign Week</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
             ))
             fig.add_trace(go.Scatter(
                 x=dates, y=b_vals, mode="lines+markers",
-                line=dict(color=c_base, width=2, dash="dot"),
-                marker=dict(size=6, symbol="diamond"),
+                line=dict(color="#6c7086", width=2, dash="dot"),
+                marker=dict(size=6, symbol="diamond", color="#6c7086"),
                 name="Base Week",
                 hovertemplate="<b>Base Week</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
             ))
@@ -336,8 +324,8 @@ if u2t_col_name:
     fig = go.Figure()
     fig.add_trace(go.Scatter(
         x=dates, y=u2t_vals, mode="lines+markers",
-        line=dict(color="#f9e2af", width=2.5),
-        marker=dict(size=6, symbol="circle"),
+        line=dict(color="#f9e2af", width=3),
+        marker=dict(size=7, symbol="circle"),
         name="U2T",
         hovertemplate="<b>U2T</b><br>%{x|%d %b}<br>%{y:,.2f}<extra></extra>",
     ))
