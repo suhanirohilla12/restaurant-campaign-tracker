@@ -186,6 +186,14 @@ with st.sidebar:
 
     df.columns = [c.strip() for c in df.columns]
 
+    # Strip Indian-format commas from numeric-looking string columns (e.g. "1,13,955.00")
+    for col in df.columns:
+        if df[col].dtype == object:
+            cleaned = df[col].astype(str).str.replace(",", "", regex=False).str.strip()
+            converted = pd.to_numeric(cleaned, errors="coerce")
+            if converted.notna().sum() > 0:
+                df[col] = converted
+
     cam_col = "cam" if "cam" in df.columns else df.columns[0]
 
     st.markdown("---")
