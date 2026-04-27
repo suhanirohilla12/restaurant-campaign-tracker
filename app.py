@@ -212,7 +212,9 @@ if "dt" in sel_df.columns:
 else:
     dates = pd.Series(range(len(sel_df)), index=sel_df.index)
 
-st.sidebar.write("Dates parsed:", dates.dt.strftime("%b %d").tolist() if hasattr(dates, "dt") else dates.tolist())
+st.sidebar.write("Rows for this campaign:", len(sel_df))
+st.sidebar.write("All dt values:", df["dt"].tolist())
+st.sidebar.write("All cam values:", df[cam_col].unique().tolist())
 
 # ── Header ────────────────────────────────────────────────────────────────────
 city = camp_row.get("city", "")
