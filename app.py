@@ -107,6 +107,11 @@ LINE_COLORS = [
 ]
 
 
+def to_num(series):
+    s = series.astype(str).str.replace(",", "", regex=False).str.strip()
+    return pd.to_numeric(s, errors="coerce")
+
+
 def fmt(val):
     try:
         f = float(val)
@@ -270,8 +275,8 @@ if present_lines:
         ):
             first_date = dates.iloc[0] - pd.Timedelta(days=1) if len(dates) > 0 else 0
             x_with_zero = [first_date] + list(dates)
-            c_with_zero = [0] + list(pd.to_numeric(sel_df[camp_col], errors="coerce"))
-            b_with_zero = [0] + list(pd.to_numeric(sel_df[base_col], errors="coerce"))
+            c_with_zero = [0] + list(to_num(sel_df[camp_col]))
+            b_with_zero = [0] + list(to_num(sel_df[base_col]))
 
             fig = go.Figure()
             fig.add_trace(go.Scatter(
@@ -302,7 +307,7 @@ if u2t_col_name:
     left, _ = st.columns([1, 2])
     fig = go.Figure()
     first_date = dates.iloc[0] - pd.Timedelta(days=1) if len(dates) > 0 else 0
-    u2t_with_zero = [0] + list(pd.to_numeric(sel_df[u2t_col_name], errors="coerce"))
+    u2t_with_zero = [0] + list(to_num(sel_df[u2t_col_name]))
     fig.add_trace(go.Scatter(
         x=[first_date] + list(dates), y=u2t_with_zero, mode="lines+markers",
         line=dict(color="#f9e2af", width=2), marker=dict(size=5), name="U2T",
