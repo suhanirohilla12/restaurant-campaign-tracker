@@ -202,10 +202,8 @@ sel_df = df[df[cam_col] == selected].copy()
 camp_row = sel_df.iloc[0]
 
 if "dt" in sel_df.columns:
-    parsed = pd.to_datetime(sel_df["dt"].astype(str).str.strip(), dayfirst=True, errors="coerce")
-    if parsed.isna().all():
-        parsed = pd.to_datetime(sel_df["dt"].astype(str).str.strip(), dayfirst=False, errors="coerce")
-    sel_df["_dt"] = parsed.dt.normalize()
+    parsed = pd.to_datetime(sel_df["dt"].astype(str).str.strip(), format="%m/%d/%Y", errors="coerce")
+    sel_df["_dt"] = parsed
     sel_df = sel_df.sort_values("_dt")
     dates = sel_df["_dt"]
     if dates.isna().all():
