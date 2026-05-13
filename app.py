@@ -16,7 +16,7 @@ st.markdown("""
     }
     .kpi-label {
         font-size: 11px;
-        color: #a6adc8;
+        color: #ffffff;
         text-transform: uppercase;
         letter-spacing: 0.8px;
         margin-bottom: 6px;
@@ -24,12 +24,12 @@ st.markdown("""
     .kpi-value {
         font-size: 22px;
         font-weight: 700;
-        color: #cdd6f4;
+        color: #ffffff;
     }
     .section-title {
         font-size: 15px;
         font-weight: 600;
-        color: #cdd6f4;
+        color: #ffffff;
         margin: 22px 0 10px 0;
         border-bottom: 1px solid #313244;
         padding-bottom: 6px;
