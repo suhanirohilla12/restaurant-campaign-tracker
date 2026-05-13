@@ -301,14 +301,17 @@ if free_col and paid_col:
         marker=dict(colors=["#a6e3a1", "#f38ba8"]),
         hole=0.4,
         textinfo="label+percent",
-        textfont=dict(color="#cdd6f4", size=12),
+        textposition="outside",
+        textfont=dict(color="#ffffff", size=13),
+        insidetextorientation="horizontal",
+        pull=[0.03, 0.03],
     ))
     fig.update_layout(
         plot_bgcolor="#1e1e2e", paper_bgcolor="#1e1e2e",
-        font_color="#cdd6f4",
-        legend=dict(bgcolor="#1e1e2e", font=dict(size=11)),
-        margin=dict(t=40, b=20, l=10, r=10),
-        height=320,
+        font_color="#ffffff",
+        legend=dict(bgcolor="#1e1e2e", font=dict(size=12, color="#ffffff")),
+        margin=dict(t=40, b=40, l=40, r=40),
+        height=360,
     )
     left.plotly_chart(fig, use_container_width=True)
 
