@@ -212,16 +212,16 @@ st.markdown(f"## {selected}")
 st.markdown("---")
 
 # ── 1. TOP KPI CARDS (GMV, Txns, ULV, Bookings, N Txns, Walkin Txns) ─────────
-present_top = [(label, find_col(df, col)) for label, col in TOP_KPI_COLS if find_col(df, col)]
-if present_top:
-    st.markdown('<div class="section-title">Campaign Performance</div>', unsafe_allow_html=True)
-    cols = st.columns(len(present_top))
-    for col_ui, (label, col) in zip(cols, present_top):
-        col_ui.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">{label}</div>
-            <div class="kpi-value">{fmt(camp_row.get(col, "—"))}</div>
-        </div>""", unsafe_allow_html=True)
+st.markdown('<div class="section-title">Campaign Performance</div>', unsafe_allow_html=True)
+top_cols = st.columns(len(TOP_KPI_COLS))
+for col_ui, (label, col) in zip(top_cols, TOP_KPI_COLS):
+    actual_col = find_col(df, col)
+    val = fmt(camp_row.get(actual_col, "—")) if actual_col else "—"
+    col_ui.markdown(f"""
+    <div class="kpi-card">
+        <div class="kpi-label">{label}</div>
+        <div class="kpi-value">{val}</div>
+    </div>""", unsafe_allow_html=True)
 
 # ── 2. SECONDARY KPI CARDS ────────────────────────────────────────────────────
 present_kpi = [(label, find_col(df, col)) for label, col in KPI_COLS if find_col(df, col)]
