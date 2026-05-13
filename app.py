@@ -100,11 +100,26 @@ BAR_COLORS = [
 ]
 
 
-def find_col(df, name):
-    """Case-insensitive column lookup."""
-    nl = name.lower().strip()
+def excel_col_idx(letter):
+    """Convert Excel column letter(s) to 0-based index. A=0, B=1, ..., Z=25, AA=26, AJ=35 ..."""
+    result = 0
+    for c in letter.upper().strip():
+        result = result * 26 + (ord(c) - 64)
+    return result - 1
+
+
+def find_col(df, ref):
+    """Resolve column by Excel letter position first, then fall back to name match."""
+    ref = ref.strip()
+    # If ref is purely alphabetic treat it as an Excel column letter (position-based)
+    if ref.isalpha():
+        idx = excel_col_idx(ref)
+        if idx < len(df.columns):
+            return df.columns[idx]
+    # Fall back: case-insensitive name match
+    ref_lower = ref.lower()
     for col in df.columns:
-        if col.lower().strip() == nl:
+        if col.lower().strip() == ref_lower:
             return col
     return None
 
