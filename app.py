@@ -305,12 +305,13 @@ if free_col and paid_col:
         textfont=dict(color="#ffffff", size=13),
         insidetextorientation="horizontal",
         pull=[0.03, 0.03],
+        domain=dict(x=[0.2, 0.8], y=[0.05, 0.95]),
     ))
     fig.update_layout(
         plot_bgcolor="#1e1e2e", paper_bgcolor="#1e1e2e",
         font_color="#ffffff",
-        legend=dict(bgcolor="#1e1e2e", font=dict(size=12, color="#ffffff")),
-        margin=dict(t=40, b=40, l=40, r=40),
+        showlegend=False,
+        margin=dict(t=20, b=20, l=80, r=80),
         height=360,
     )
     left.plotly_chart(fig, use_container_width=True)
