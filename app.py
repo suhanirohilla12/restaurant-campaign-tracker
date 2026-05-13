@@ -48,13 +48,24 @@ BAR_PAIRS = [
     ("Bookings", "aw", "ay"),
 ]
 
-# 5 Grouped bar charts: day-wise campaign vs base week
+# Top KPI cards
+TOP_KPI_COLS = [
+    ("GMV",         "AJ"),
+    ("Txns",        "AL"),
+    ("ULV",         "AT"),
+    ("Bookings",    "aw"),
+    ("N Txns",      "an"),
+    ("Walkin Txns", "af"),
+]
+
+# 6 Grouped bar charts: day-wise campaign vs base week
 GROUPED_BARS = [
     ("GMV",      "e",  "F"),
     ("Txns",     "h",  "I"),
     ("N Txns",   "k",  "L"),
     ("Bookings", "q",  "r"),
     ("ULV",      "ah", "ai"),
+    ("U2T%",     "az", "be"),
 ]
 
 # Pie chart bookings split
@@ -200,7 +211,19 @@ else:
 st.markdown(f"## {selected}")
 st.markdown("---")
 
-# ── 1. KPI CARDS ─────────────────────────────────────────────────────────────
+# ── 1. TOP KPI CARDS (GMV, Txns, ULV, Bookings, N Txns, Walkin Txns) ─────────
+present_top = [(label, find_col(df, col)) for label, col in TOP_KPI_COLS if find_col(df, col)]
+if present_top:
+    st.markdown('<div class="section-title">Campaign Performance</div>', unsafe_allow_html=True)
+    cols = st.columns(len(present_top))
+    for col_ui, (label, col) in zip(cols, present_top):
+        col_ui.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">{label}</div>
+            <div class="kpi-value">{fmt(camp_row.get(col, "—"))}</div>
+        </div>""", unsafe_allow_html=True)
+
+# ── 2. SECONDARY KPI CARDS ────────────────────────────────────────────────────
 present_kpi = [(label, find_col(df, col)) for label, col in KPI_COLS if find_col(df, col)]
 if present_kpi:
     st.markdown('<div class="section-title">Campaign KPIs</div>', unsafe_allow_html=True)
@@ -212,7 +235,7 @@ if present_kpi:
             <div class="kpi-value">{fmt(camp_row.get(col, "—"))}</div>
         </div>""", unsafe_allow_html=True)
 
-# ── 2. BAR CHARTS: Campaign vs Incremental ────────────────────────────────────
+# ── 3. BAR CHARTS: Campaign vs Incremental ────────────────────────────────────
 present_bars = [(t, find_col(df, b), find_col(df, i))
                 for t, b, i in BAR_PAIRS
                 if find_col(df, b) and find_col(df, i)]
@@ -231,7 +254,7 @@ if present_bars:
                           barmode="group", showlegend=False, **CHART_BASE)
         col_ui.plotly_chart(fig, use_container_width=True)
 
-# ── 3. GROUPED BAR CHARTS: Day-wise Campaign vs Base Week ─────────────────────
+# ── 4. GROUPED BAR CHARTS: Day-wise Campaign vs Base Week ─────────────────────
 present_grouped = [(t, find_col(df, c), find_col(df, b))
                    for t, c, b in GROUPED_BARS
                    if find_col(df, c) and find_col(df, b)]
@@ -264,7 +287,7 @@ if present_grouped:
             )
             col_ui.plotly_chart(fig, use_container_width=True)
 
-# ── 4. PIE CHART: Bookings Split ─────────────────────────────────────────────
+# ── 5. PIE CHART: Bookings Split ─────────────────────────────────────────────
 free_col = find_col(df, PIE_FREE)
 paid_col = find_col(df, PIE_PAID)
 if free_col and paid_col:
@@ -289,7 +312,7 @@ if free_col and paid_col:
     )
     left.plotly_chart(fig, use_container_width=True)
 
-# ── 5. DATA TABLE ─────────────────────────────────────────────────────────────
+# ── 6. DATA TABLE ─────────────────────────────────────────────────────────────
 st.markdown('<div class="section-title">All Data</div>', unsafe_allow_html=True)
 
 
