@@ -39,55 +39,45 @@ st.markdown("""
 
 # ── Column definitions ────────────────────────────────────────────────────────
 
-# D/F/H/J/L: top-level campaign KPI cards
-TOP_KPI_COLS = [
-    ("GMV",      "Campaign GMV"),
-    ("Txns",     "Txns Campaigns"),
-    ("ULV",      "ULV campaign"),
-    ("N Txns",   "N txns camp"),
-    ("Bookings", "Bookings campaign"),
-]
-
-# Y–AE: secondary KPI cards
-SEC_KPI_COLS = [
-    ("Inc Burn",           "Inc burn (Campaign)"),
-    ("CPIT",               "CPIT (campaign)"),
-    ("Txns Growth",        "TXNS growth"),
-    ("ULV Growth",         "ULV Growth"),
-    ("Banner Impressions", "Banner impressions"),
-    ("Banner Clicks",      "Banner clicks"),
-    ("Banner CTR",         "banner ctr"),
-]
-
-# D–M: 5 paired bar charts (campaign vs incremental)
+# 5 Bar charts: campaign total vs incremental
 BAR_PAIRS = [
-    ("GMV",      "Campaign GMV",      "Inc GMV Campaign"),
-    ("Txns",     "Txns Campaigns",    "Inc txns camp"),
-    ("ULV",      "ULV campaign",      "Inc ulv campaign"),
-    ("N Txns",   "N txns camp",       "Inc N txns camp"),
-    ("Bookings", "Bookings campaign", "Inc Bookings camp"),
+    ("GMV",      "AJ", "AK"),
+    ("Txns",     "AL", "AM"),
+    ("N Txns",   "an", "ao"),
+    ("ULV",      "AT", "AV"),
+    ("Bookings", "aw", "ay"),
 ]
 
-# N–W: 5 paired line charts (campaign week vs base week)
-LINE_PAIRS = [
-    ("GMV",      "gmv",           "base week gmv"),
-    ("ULV",      "ulv_",          "base week ulv"),
-    ("Txns",     "txns",          "base week txns"),
-    ("N Txns",   "n_txns",        "base week n txns"),
-    ("Bookings", "bookings_made", "base week bookings"),
+# 5 Grouped bar charts: day-wise campaign vs base week
+GROUPED_BARS = [
+    ("GMV",      "e",  "F"),
+    ("Txns",     "h",  "I"),
+    ("N Txns",   "k",  "L"),
+    ("Bookings", "q",  "r"),
+    ("ULV",      "ah", "ai"),
 ]
 
-U2T_COL = "u2t"
+# Pie chart bookings split
+PIE_FREE = "v"
+PIE_PAID = "aa"
+
+# KPI Cards
+KPI_COLS = [
+    ("Txns Growth", "BA"),
+    ("ULV Growth",  "BB"),
+    ("CPIT",        "BC"),
+    ("Inc Burn",    "bd"),
+]
 
 CHART_BASE = dict(
     plot_bgcolor="#1e1e2e",
     paper_bgcolor="#1e1e2e",
     font_color="#cdd6f4",
-    margin=dict(t=40, b=20, l=10, r=10),
+    margin=dict(t=50, b=30, l=10, r=10),
     xaxis=dict(gridcolor="#313244", showgrid=True),
     yaxis=dict(gridcolor="#313244", showgrid=True),
     legend=dict(bgcolor="#1e1e2e", font=dict(size=11)),
-    height=300,
+    height=320,
 )
 
 BAR_COLORS = [
@@ -98,13 +88,14 @@ BAR_COLORS = [
     ("#f9e2af", "#eba0ac"),
 ]
 
-LINE_COLORS = [
-    ("#89b4fa", "#585b70"),
-    ("#a6e3a1", "#2d6a2d"),
-    ("#f38ba8", "#7d3354"),
-    ("#fab387", "#7d5437"),
-    ("#cba6f7", "#6c4fa0"),
-]
+
+def find_col(df, name):
+    """Case-insensitive column lookup."""
+    nl = name.lower().strip()
+    for col in df.columns:
+        if col.lower().strip() == nl:
+            return col
+    return None
 
 
 def to_num(series):
@@ -120,7 +111,7 @@ def fmt(val):
         if abs(f) >= 1_000_000:
             return f"{f/1_000_000:.2f}M"
         if abs(f) >= 1_000:
-            return f"{f:,.1f}"
+            return f"{f:,.0f}"
         return f"{f:,.2f}"
     except Exception:
         return str(val) if pd.notna(val) else "—"
@@ -128,45 +119,40 @@ def fmt(val):
 
 def generate_sample_data():
     rng = np.random.default_rng(42)
-    cams = ["Burger Palace_w16", "Sushi Zen_w16", "Taco Fiesta_w16", "Pizza Heaven_w16"]
+    cams = ["Burger Palace_w16", "Sushi Zen_w16", "Taco Fiesta_w16"]
     rows = []
     for cam in cams:
-        for day_offset in range(7):
-            dt = pd.Timestamp("2026-04-13") + pd.Timedelta(days=day_offset)
-            bg, bt, bu, bn, bb = (rng.uniform(100_000, 500_000), rng.uniform(50, 200),
-                                   rng.uniform(300, 1500), rng.uniform(10, 60), rng.uniform(20, 100))
+        for day_offset in range(5):
+            dt = pd.Timestamp("2026-04-22") + pd.Timedelta(days=day_offset)
             rows.append({
                 "dt": dt.strftime("%m/%d/%Y"),
-                "city": rng.choice(["Delhi", "Mumbai", "Bangalore"]),
                 "cam": cam,
-                "Campaign GMV":       round(bg, 2),
-                "Inc GMV Campaign":   round(bg * rng.uniform(0.4, 0.7), 2),
-                "Txns Campaigns":     round(bt, 2),
-                "Inc txns camp":      round(bt * rng.uniform(0.3, 0.6), 2),
-                "ULV campaign":       round(bu, 2),
-                "Inc ulv campaign":   round(bu * rng.uniform(0.2, 0.5), 2),
-                "N txns camp":        round(bn, 2),
-                "Inc N txns camp":    round(bn * rng.uniform(0.3, 0.7), 2),
-                "Bookings campaign":  round(bb, 2),
-                "Inc Bookings camp":  round(bb * rng.uniform(0.4, 0.8), 2),
-                "gmv":                round(bg * rng.uniform(0.8, 1.1), 2),
-                "base week gmv":      round(bg * rng.uniform(0.6, 0.85), 2),
-                "ulv_":               round(bu * rng.uniform(0.9, 1.05), 2),
-                "base week ulv":      round(bu * rng.uniform(0.7, 0.9), 2),
-                "txns":               round(bt * rng.uniform(0.9, 1.1), 2),
-                "base week txns":     round(bt * rng.uniform(0.6, 0.85), 2),
-                "n_txns":             round(bn * rng.uniform(0.85, 1.1), 2),
-                "base week n txns":   round(bn * rng.uniform(0.6, 0.85), 2),
-                "bookings_made":      round(bb * rng.uniform(0.85, 1.1), 2),
-                "base week bookings": round(bb * rng.uniform(0.6, 0.85), 2),
-                "u2t":                round(rng.uniform(5, 25), 2),
-                "Inc burn (Campaign)":round(rng.uniform(-20000, 50000), 2),
-                "CPIT (campaign)":    round(rng.uniform(-500, 1000), 2),
-                "TXNS growth":        round(rng.uniform(1.0, 3.5), 4),
-                "ULV Growth":         round(rng.uniform(1.0, 3.5), 4),
-                "Banner impressions": round(rng.uniform(10000, 200000)),
-                "Banner clicks":      round(rng.uniform(100, 5000)),
-                "banner ctr":         round(rng.uniform(0.005, 0.05), 4),
+                "e":  round(rng.uniform(50000, 200000), 2),
+                "F":  round(rng.uniform(40000, 180000), 2),
+                "h":  round(rng.uniform(100, 500), 2),
+                "I":  round(rng.uniform(80, 400), 2),
+                "k":  round(rng.uniform(20, 100), 2),
+                "L":  round(rng.uniform(15, 90), 2),
+                "q":  round(rng.uniform(50, 200), 2),
+                "r":  round(rng.uniform(40, 180), 2),
+                "v":  round(rng.uniform(20, 100), 2),
+                "aa": round(rng.uniform(10, 80), 2),
+                "ah": round(rng.uniform(500, 2000), 2),
+                "ai": round(rng.uniform(400, 1800), 2),
+                "an": round(rng.uniform(20, 100), 2),
+                "ao": round(rng.uniform(10, 60), 2),
+                "AJ": round(rng.uniform(200000, 800000), 2),
+                "AK": round(rng.uniform(80000, 400000), 2),
+                "AL": round(rng.uniform(500, 2000), 2),
+                "AM": round(rng.uniform(200, 900), 2),
+                "AT": round(rng.uniform(1000, 4000), 2),
+                "AV": round(rng.uniform(400, 2000), 2),
+                "aw": round(rng.uniform(200, 800), 2),
+                "ay": round(rng.uniform(80, 400), 2),
+                "BA": round(rng.uniform(1.0, 3.0), 4),
+                "BB": round(rng.uniform(1.0, 3.0), 4),
+                "BC": round(rng.uniform(-500, 1000), 2),
+                "bd": round(rng.uniform(-20000, 50000), 2),
             })
     return pd.DataFrame(rows)
 
@@ -175,24 +161,24 @@ def generate_sample_data():
 with st.sidebar:
     st.title("Campaign Dashboard")
     st.markdown("---")
-
     uploaded = st.file_uploader("Upload CSV or Excel", type=["csv", "xlsx", "xls"])
-
     if uploaded:
         try:
             df = pd.read_csv(uploaded) if uploaded.name.endswith(".csv") else pd.read_excel(uploaded)
             st.success(f"Loaded {len(df)} rows")
         except Exception as e:
-            st.error(f"Error reading file: {e}")
+            st.error(f"Error: {e}")
             df = generate_sample_data()
     else:
         df = generate_sample_data()
         st.info("Showing sample data")
 
     df.columns = [c.strip() for c in df.columns]
+    # Strip string values (handles trailing spaces in campaign names)
+    for col in df.select_dtypes(include="object").columns:
+        df[col] = df[col].str.strip()
 
     cam_col = "cam" if "cam" in df.columns else df.columns[0]
-
     st.markdown("---")
     campaigns = sorted(df[cam_col].dropna().unique().tolist())
     selected = st.selectbox("Select Restaurant / Campaign", campaigns)
@@ -202,102 +188,108 @@ sel_df = df[df[cam_col] == selected].copy()
 camp_row = sel_df.iloc[0]
 
 if "dt" in sel_df.columns:
-    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], dayfirst=False, errors="coerce").dt.normalize()
-    sel_df = sel_df.sort_values("_dt")
-    dates = sel_df["_dt"]
+    sel_df["_dt"] = pd.to_datetime(sel_df["dt"], format="%m/%d/%Y", errors="coerce")
+    if sel_df["_dt"].isna().all():
+        sel_df["_dt"] = pd.to_datetime(sel_df["dt"], errors="coerce")
+    sel_df = sel_df[sel_df["_dt"].notna()].sort_values("_dt")
+    dates = sel_df["_dt"].dt.strftime("%b %d")
 else:
-    dates = pd.Series(range(len(sel_df)))
+    dates = pd.Series(range(len(sel_df)), index=sel_df.index)
 
 # ── Header ────────────────────────────────────────────────────────────────────
-city = camp_row.get("city", "")
-st.markdown(f"## {selected}" + (f"  —  {city}" if city else ""))
+st.markdown(f"## {selected}")
 st.markdown("---")
 
-# ── 1. TOP KPI CARDS (D/F/H/J/L: campaign values) ────────────────────────────
-present_top = [(label, col) for label, col in TOP_KPI_COLS if col in df.columns]
-if present_top:
-    st.markdown('<div class="section-title">Campaign Performance</div>', unsafe_allow_html=True)
-    cols = st.columns(len(present_top))
-    for col_ui, (label, col) in zip(cols, present_top):
-        col_ui.markdown(f"""
-        <div class="kpi-card">
-            <div class="kpi-label">{label}</div>
-            <div class="kpi-value">{fmt(camp_row.get(col, "—"))}</div>
-        </div>
-        """, unsafe_allow_html=True)
-
-# ── 2. SECONDARY KPI CARDS (Y–AE) ────────────────────────────────────────────
-present_sec = [(label, col) for label, col in SEC_KPI_COLS if col in df.columns]
-if present_sec:
+# ── 1. KPI CARDS ─────────────────────────────────────────────────────────────
+present_kpi = [(label, find_col(df, col)) for label, col in KPI_COLS if find_col(df, col)]
+if present_kpi:
     st.markdown('<div class="section-title">Campaign KPIs</div>', unsafe_allow_html=True)
-    cols = st.columns(len(present_sec))
-    for col_ui, (label, col) in zip(cols, present_sec):
+    cols = st.columns(len(present_kpi))
+    for col_ui, (label, col) in zip(cols, present_kpi):
         col_ui.markdown(f"""
         <div class="kpi-card">
             <div class="kpi-label">{label}</div>
             <div class="kpi-value">{fmt(camp_row.get(col, "—"))}</div>
-        </div>
-        """, unsafe_allow_html=True)
+        </div>""", unsafe_allow_html=True)
 
-# ── 3. BAR CHARTS (Campaign vs Incremental) ───────────────────────────────────
-present_bars = [(t, b, i) for t, b, i in BAR_PAIRS if b in df.columns and i in df.columns]
+# ── 2. BAR CHARTS: Campaign vs Incremental ────────────────────────────────────
+present_bars = [(t, find_col(df, b), find_col(df, i))
+                for t, b, i in BAR_PAIRS
+                if find_col(df, b) and find_col(df, i)]
 if present_bars:
     st.markdown('<div class="section-title">Campaign vs Incremental</div>', unsafe_allow_html=True)
     cols = st.columns(len(present_bars))
     for col_ui, (title, base_col, incr_col), (c1, c2) in zip(cols, present_bars, BAR_COLORS):
-        base_val = camp_row.get(base_col, 0)
-        incr_val = camp_row.get(incr_col, 0)
+        base_val = to_num(pd.Series([camp_row.get(base_col, 0)])).iloc[0]
+        incr_val = to_num(pd.Series([camp_row.get(incr_col, 0)])).iloc[0]
         fig = go.Figure()
-        fig.add_trace(go.Bar(
-            name="Campaign", x=["Campaign"], y=[base_val],
-            marker_color=c1, text=[fmt(base_val)], textposition="outside",
-        ))
-        fig.add_trace(go.Bar(
-            name="Incremental", x=["Incremental"], y=[incr_val],
-            marker_color=c2, text=[fmt(incr_val)], textposition="outside",
-        ))
-        fig.update_layout(
-            title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
-            barmode="group", showlegend=False, **CHART_BASE,
-        )
+        fig.add_trace(go.Bar(name="Campaign", x=["Campaign"], y=[base_val],
+                             marker_color=c1, text=[fmt(base_val)], textposition="outside"))
+        fig.add_trace(go.Bar(name="Incremental", x=["Incremental"], y=[incr_val],
+                             marker_color=c2, text=[fmt(incr_val)], textposition="outside"))
+        fig.update_layout(title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
+                          barmode="group", showlegend=False, **CHART_BASE)
         col_ui.plotly_chart(fig, use_container_width=True)
 
-# ── 4. TREND LINES (Campaign Week vs Base Week) ───────────────────────────────
-present_lines = [(t, c, b) for t, c, b in LINE_PAIRS if c in df.columns and b in df.columns]
-if present_lines:
-    st.markdown('<div class="section-title">Campaign Week vs Base Week</div>', unsafe_allow_html=True)
+# ── 3. GROUPED BAR CHARTS: Day-wise Campaign vs Base Week ─────────────────────
+present_grouped = [(t, find_col(df, c), find_col(df, b))
+                   for t, c, b in GROUPED_BARS
+                   if find_col(df, c) and find_col(df, b)]
+if present_grouped:
+    st.markdown('<div class="section-title">Campaign Week vs Base Week (Day-wise)</div>', unsafe_allow_html=True)
     per_row = 3
-    for row_start in range(0, len(present_lines), per_row):
-        chunk = present_lines[row_start:row_start + per_row]
+    for row_start in range(0, len(present_grouped), per_row):
+        chunk = present_grouped[row_start:row_start + per_row]
         cols = st.columns(per_row)
-        for col_ui, (title, camp_col, base_col), (c_camp, c_base) in zip(
-            cols, chunk, LINE_COLORS[row_start:]
+        for col_ui, (title, camp_col_name, base_col_name), (c1, c2) in zip(
+            cols, chunk, BAR_COLORS[row_start:]
         ):
+            c_vals = to_num(sel_df[camp_col_name])
+            b_vals = to_num(sel_df[base_col_name])
             fig = go.Figure()
-            fig.add_trace(go.Scatter(
-                x=dates, y=to_num(sel_df[camp_col]), mode="lines+markers",
-                line=dict(color=c_camp, width=2), marker=dict(size=5), name="Campaign Week",
-            ))
-            fig.add_trace(go.Scatter(
-                x=dates, y=to_num(sel_df[base_col]), mode="lines+markers",
-                line=dict(color=c_base, width=2, dash="dot"), marker=dict(size=5), name="Base Week",
-            ))
+            fig.add_trace(go.Bar(name="Campaign Week", x=dates, y=c_vals,
+                                 marker_color=c1))
+            fig.add_trace(go.Bar(name="Base Week", x=dates, y=b_vals,
+                                 marker_color=c2))
             fig.update_layout(
                 title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
+                barmode="group",
                 showlegend=True,
-                legend=dict(
-                    orientation="h", x=0, y=1.15,
-                    font=dict(size=11, color="#cdd6f4"),
-                    bgcolor="rgba(0,0,0,0)",
-                ),
-                xaxis=dict(gridcolor="#313244", showgrid=True, tickformat="%b %d", tickangle=-30),
-                yaxis=dict(gridcolor="#313244", showgrid=True, rangemode="tozero"),
+                legend=dict(orientation="h", y=1.15, x=0,
+                            font=dict(size=10, color="#cdd6f4"),
+                            bgcolor="rgba(0,0,0,0)"),
+                xaxis=dict(gridcolor="#313244", showgrid=False, tickangle=-30),
+                yaxis=dict(gridcolor="#313244", showgrid=True),
                 **{k: v for k, v in CHART_BASE.items() if k not in ("legend", "xaxis", "yaxis")},
             )
             col_ui.plotly_chart(fig, use_container_width=True)
 
+# ── 4. PIE CHART: Bookings Split ─────────────────────────────────────────────
+free_col = find_col(df, PIE_FREE)
+paid_col = find_col(df, PIE_PAID)
+if free_col and paid_col:
+    st.markdown('<div class="section-title">Bookings Split</div>', unsafe_allow_html=True)
+    left, _ = st.columns([1, 2])
+    free_val = to_num(sel_df[free_col]).sum()
+    paid_val = to_num(sel_df[paid_col]).sum()
+    fig = go.Figure(go.Pie(
+        labels=["Free Bookings", "Paid Bookings"],
+        values=[free_val, paid_val],
+        marker=dict(colors=["#a6e3a1", "#f38ba8"]),
+        hole=0.4,
+        textinfo="label+percent",
+        textfont=dict(color="#cdd6f4", size=12),
+    ))
+    fig.update_layout(
+        plot_bgcolor="#1e1e2e", paper_bgcolor="#1e1e2e",
+        font_color="#cdd6f4",
+        legend=dict(bgcolor="#1e1e2e", font=dict(size=11)),
+        margin=dict(t=40, b=20, l=10, r=10),
+        height=320,
+    )
+    left.plotly_chart(fig, use_container_width=True)
 
-# ── 6. DATA TABLE ─────────────────────────────────────────────────────────────
+# ── 5. DATA TABLE ─────────────────────────────────────────────────────────────
 st.markdown('<div class="section-title">All Data</div>', unsafe_allow_html=True)
 
 
@@ -309,7 +301,7 @@ def highlight_row(row_data):
 
 display_df = df.drop(columns=["_dt"], errors="ignore").copy()
 styled = display_df.style.apply(highlight_row, axis=1)
-st.dataframe(styled, width="stretch", hide_index=True)
+st.dataframe(styled, use_container_width=True, hide_index=True)
 
 st.download_button(
     label="⬇ Download data as CSV",
