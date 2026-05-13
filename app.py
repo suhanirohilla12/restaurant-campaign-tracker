@@ -310,9 +310,14 @@ if free_col and paid_col:
     fig.update_layout(
         plot_bgcolor="#1e1e2e", paper_bgcolor="#1e1e2e",
         font_color="#ffffff",
-        showlegend=False,
-        margin=dict(t=20, b=20, l=80, r=80),
-        height=360,
+        title=dict(text="Bookings Split", font=dict(size=14, color="#ffffff"), x=0.5, xanchor="center"),
+        showlegend=True,
+        legend=dict(
+            bgcolor="#1e1e2e", font=dict(size=12, color="#ffffff"),
+            orientation="h", x=0.5, xanchor="center", y=-0.05,
+        ),
+        margin=dict(t=50, b=60, l=80, r=80),
+        height=400,
     )
     left.plotly_chart(fig, use_container_width=True)
 
