@@ -39,46 +39,45 @@ st.markdown("""
 
 # ── Column definitions ────────────────────────────────────────────────────────
 
-# 5 Bar charts: campaign total vs incremental
-BAR_PAIRS = [
-    ("GMV",      "AJ", "AK"),
-    ("Txns",     "AL", "AM"),
-    ("N Txns",   "an", "ao"),
-    ("ULV",      "AT", "AV"),
-    ("Bookings", "aw", "ay"),
+# Top KPI cards (10 metrics)
+TOP_KPI_COLS = [
+    ("GMV",         "AL"),
+    ("Txns",        "AN"),
+    ("ULV",         "AV"),
+    ("Bookings",    "AY"),
+    ("N Txns",      "AP"),
+    ("Walkin Txns", "AF"),
+    ("Inc Burn",    "BF"),
+    ("CPIT",        "BE"),
+    ("Txns Growth", "BC"),
+    ("ULV Growth",  "BD"),
 ]
 
-# Top KPI cards
-TOP_KPI_COLS = [
-    ("GMV",         "AJ"),
-    ("Txns",        "AL"),
-    ("ULV",         "AT"),
-    ("Bookings",    "aw"),
-    ("N Txns",      "an"),
-    ("Walkin Txns", "af"),
+# 5 Bar charts: campaign total vs incremental
+BAR_PAIRS = [
+    ("GMV",      "AL", "AM"),
+    ("Txns",     "AN", "AO"),
+    ("ULV",      "AV", "AX"),
+    ("Bookings", "AY", "BA"),
+    ("N Txns",   "AP", "AQ"),
 ]
 
 # 6 Grouped bar charts: day-wise campaign vs base week
 GROUPED_BARS = [
-    ("GMV",      "e",  "F"),
-    ("Txns",     "h",  "I"),
-    ("N Txns",   "k",  "L"),
-    ("Bookings", "q",  "r"),
-    ("ULV",      "ah", "ai"),
-    ("U2T%",     "az", "be"),
+    ("GMV",      "E",  "F"),
+    ("ULV",      "AH", "AI"),
+    ("Txns",     "H",  "I"),
+    ("N Txns",   "K",  "L"),
+    ("Bookings", "Q",  "R"),
+    ("U2T%",     "BB", "BG"),
 ]
 
 # Pie chart bookings split
-PIE_FREE = "v"
-PIE_PAID = "aa"
+PIE_FREE = "V"
+PIE_PAID = "AA"
 
-# KPI Cards
-KPI_COLS = [
-    ("Txns Growth", "BA"),
-    ("ULV Growth",  "BB"),
-    ("CPIT",        "BC"),
-    ("Inc Burn",    "bd"),
-]
+# Secondary KPI cards (none — all merged into top)
+KPI_COLS = []
 
 CHART_BASE = dict(
     plot_bgcolor="#1e1e2e",
