@@ -281,9 +281,8 @@ per_row = 3
 for row_start in range(0, len(all_grouped), per_row):
     chunk = all_grouped[row_start:row_start + per_row]
     cols = st.columns(per_row)
-    for col_ui, (title, camp_col_name, base_col_name), (c1, c2) in zip(
-        cols, chunk, BAR_COLORS[row_start % len(BAR_COLORS):]
-    ):
+    for i, (col_ui, (title, camp_col_name, base_col_name)) in enumerate(zip(cols, chunk)):
+        c1, c2 = BAR_COLORS[(row_start + i) % len(BAR_COLORS)]
         c_vals = to_num(sel_df[camp_col_name]) if camp_col_name else pd.Series([0]*len(sel_df))
         b_vals = to_num(sel_df[base_col_name]) if base_col_name else pd.Series([0]*len(sel_df))
         fig = go.Figure()
