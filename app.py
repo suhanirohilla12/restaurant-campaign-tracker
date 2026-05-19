@@ -275,37 +275,33 @@ if present_bars:
         col_ui.plotly_chart(fig, use_container_width=True)
 
 # ── 4. GROUPED BAR CHARTS: Day-wise Campaign vs Base Week ─────────────────────
-present_grouped = [(t, find_col(df, c), find_col(df, b))
-                   for t, c, b in GROUPED_BARS
-                   if find_col(df, c) and find_col(df, b)]
-if present_grouped:
-    st.markdown('<div class="section-title">Campaign Week vs Base Week (Day-wise)</div>', unsafe_allow_html=True)
-    per_row = 3
-    for row_start in range(0, len(present_grouped), per_row):
-        chunk = present_grouped[row_start:row_start + per_row]
-        cols = st.columns(per_row)
-        for col_ui, (title, camp_col_name, base_col_name), (c1, c2) in zip(
-            cols, chunk, BAR_COLORS[row_start:]
-        ):
-            c_vals = to_num(sel_df[camp_col_name])
-            b_vals = to_num(sel_df[base_col_name])
-            fig = go.Figure()
-            fig.add_trace(go.Bar(name="Campaign Week", x=dates, y=c_vals,
-                                 marker_color=c1))
-            fig.add_trace(go.Bar(name="Base Week", x=dates, y=b_vals,
-                                 marker_color=c2))
-            fig.update_layout(
-                title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
-                barmode="group",
-                showlegend=True,
-                legend=dict(orientation="h", y=1.15, x=0,
-                            font=dict(size=10, color="#cdd6f4"),
-                            bgcolor="rgba(0,0,0,0)"),
-                xaxis=dict(gridcolor="#313244", showgrid=False, tickangle=-30),
-                yaxis=dict(gridcolor="#313244", showgrid=True),
-                **{k: v for k, v in CHART_BASE.items() if k not in ("legend", "xaxis", "yaxis")},
-            )
-            col_ui.plotly_chart(fig, use_container_width=True)
+all_grouped = [(t, find_col(df, c), find_col(df, b)) for t, c, b in GROUPED_BARS]
+st.markdown('<div class="section-title">Campaign Week vs Base Week (Day-wise)</div>', unsafe_allow_html=True)
+per_row = 3
+for row_start in range(0, len(all_grouped), per_row):
+    chunk = all_grouped[row_start:row_start + per_row]
+    cols = st.columns(per_row)
+    for col_ui, (title, camp_col_name, base_col_name), (c1, c2) in zip(
+        cols, chunk, BAR_COLORS[row_start % len(BAR_COLORS):]
+    ):
+        c_vals = to_num(sel_df[camp_col_name]) if camp_col_name else pd.Series([0]*len(sel_df))
+        b_vals = to_num(sel_df[base_col_name]) if base_col_name else pd.Series([0]*len(sel_df))
+        fig = go.Figure()
+        fig.add_trace(go.Bar(name="Campaign Week", x=dates, y=c_vals, marker_color=c1))
+        fig.add_trace(go.Bar(name="Base Week", x=dates, y=b_vals, marker_color=c2))
+        fig.update_layout(
+            title=dict(text=title, font=dict(size=13, color="#cdd6f4")),
+            barmode="group",
+            showlegend=True,
+            legend=dict(orientation="h", y=1.15, x=0,
+                        font=dict(size=10, color="#cdd6f4"),
+                        bgcolor="rgba(0,0,0,0)"),
+            xaxis=dict(gridcolor="#313244", showgrid=False, tickangle=-30),
+            yaxis=dict(gridcolor="#313244", showgrid=True),
+            **{k: v for k, v in CHART_BASE.items() if k not in ("legend", "xaxis", "yaxis")},
+        )
+        col_ui.plotly_chart(fig, use_container_width=True)
+
 
 # ── 5. PIE CHART: Bookings Split ─────────────────────────────────────────────
 free_col = find_col(df, PIE_FREE)
