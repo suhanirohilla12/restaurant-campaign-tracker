@@ -11,20 +11,24 @@ st.markdown("""
         background: #1e1e2e;
         border: 1px solid #313244;
         border-radius: 10px;
-        padding: 16px 14px;
+        padding: 12px 6px;
         text-align: center;
     }
     .kpi-label {
-        font-size: 11px;
+        font-size: 10px;
         color: #ffffff;
         text-transform: uppercase;
-        letter-spacing: 0.8px;
-        margin-bottom: 6px;
+        letter-spacing: 0.5px;
+        margin-bottom: 4px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
     }
     .kpi-value {
-        font-size: 22px;
+        font-size: 16px;
         font-weight: 700;
         color: #ffffff;
+        white-space: nowrap;
     }
     .section-title {
         font-size: 15px;
@@ -227,15 +231,17 @@ st.markdown("---")
 
 # ── 1. TOP KPI CARDS (GMV, Txns, ULV, Bookings, N Txns, Walkin Txns) ─────────
 st.markdown('<div class="section-title">Campaign Performance</div>', unsafe_allow_html=True)
-top_cols = st.columns(len(TOP_KPI_COLS))
-for col_ui, (label, col) in zip(top_cols, TOP_KPI_COLS):
-    actual_col = find_col(df, col)
-    val = fmt(camp_row.get(actual_col, "—")) if actual_col else "—"
-    col_ui.markdown(f"""
-    <div class="kpi-card">
-        <div class="kpi-label">{label}</div>
-        <div class="kpi-value">{val}</div>
-    </div>""", unsafe_allow_html=True)
+for row_kpis in [TOP_KPI_COLS[:5], TOP_KPI_COLS[5:]]:
+    top_cols = st.columns(5)
+    for col_ui, (label, col) in zip(top_cols, row_kpis):
+        actual_col = find_col(df, col)
+        val = fmt(camp_row.get(actual_col, "—")) if actual_col else "—"
+        col_ui.markdown(f"""
+        <div class="kpi-card">
+            <div class="kpi-label">{label}</div>
+            <div class="kpi-value">{val}</div>
+        </div>""", unsafe_allow_html=True)
+    st.markdown("<br>", unsafe_allow_html=True)
 
 # ── 2. SECONDARY KPI CARDS ────────────────────────────────────────────────────
 present_kpi = [(label, find_col(df, col)) for label, col in KPI_COLS if find_col(df, col)]
